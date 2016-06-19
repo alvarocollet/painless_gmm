@@ -1,0 +1,15 @@
+################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+External/
+.vs/
+/gmm/x64/Debug
+/gmm_example/x64/Debug
+/ipch/GMM_EXAMPLE-7c8e9aae
+*.db
+*.opendb
+*.lib
+*.pdb
+*.exe
+*.ilk
