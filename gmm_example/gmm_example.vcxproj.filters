@@ -29,8 +29,5 @@
     <ClCompile Include="gmm_example.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="kmeans_test.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>
