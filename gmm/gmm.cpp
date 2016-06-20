@@ -110,7 +110,7 @@ double AC::GMM::GMM3D::LogResponsibility(const Vec3& observation, int idxMode)
 }
 
 //----------------------------------------------------------------------------
-bool AC::GMM::GMM3D::Process(const std::vector<Vec3>& observations, int numKMeansRestarts, Vec3* scalingFactors)
+bool AC::GMM::GMM3D::Process(const std::vector<Vec3>& observations, int numKMeansRestarts, Vec3* scalingFactors, double EMTolerance, int maxIterations)
 {
     // Compute K-Means to initialize GMM
     AC::KMeans3D kmeans((int)Modes().size());
@@ -124,7 +124,7 @@ bool AC::GMM::GMM3D::Process(const std::vector<Vec3>& observations, int numKMean
     }
 
     // Use EM to optimize GMM
-    AC::GMM::EM EMTraining((int)observations.size(), (int)Modes().size(), c_EMTolerance);
+    AC::GMM::EM EMTraining((int)observations.size(), (int)Modes().size(), EMTolerance, maxIterations);
     bool success = EMTraining.Process(observations, *this);
 
     // Sort modes according to weight

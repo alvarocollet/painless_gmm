@@ -2,7 +2,10 @@
 #include "em.h"
 
 //----------------------------------------------------------------------------
-AC::GMM::EM::EM(int numObservations, int numModes, double tolerance) : m_maxIterations(c_MaxIterations), m_numTrainingPoints(numObservations), m_tolerance(tolerance)
+AC::GMM::EM::EM(int numObservations, int numModes, double tolerance, int maxIterations) 
+    : m_numTrainingPoints(numObservations)
+    , m_tolerance(tolerance)
+    , m_maxIterations(maxIterations)
 {
     // Reserve memory for our temporary vectors (to avoid allocations while processing)
     m_tmpResponsibilities.reserve(numModes);
@@ -14,14 +17,11 @@ AC::GMM::EM::EM(int numObservations, int numModes, double tolerance) : m_maxIter
 void AC::GMM::EM::UpdateResponsibilities(const std::vector<Vec3>& observations, GMM3D& gmm)
 {
     _ASSERT(observations.size() == m_numTrainingPoints && m_numTrainingPoints >= gmm.Modes().size() && "Invalid number of observations.");
-    bool nonFinite = false;
     int numObservations = (int)observations.size();
     int numModes = (int)gmm.Modes().size();
     for (int o = 0; o < numObservations; ++o) {
         for (int idxMode = 0; idxMode < numModes; ++idxMode) {
             double responsibility = exp(gmm.LogResponsibility(observations[o], idxMode));
-            if (!IsFinite(responsibility))
-                nonFinite = true;
             m_tmpResponsibilities[idxMode][o] = IsFinite(responsibility) ? responsibility : 0;
         }
     }

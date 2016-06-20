@@ -9,7 +9,8 @@
 #include <Eigen/Geometry>
 
 ///////////////////////////////////////////////////////////////////////////////
-bool TestKMeans3D() // Basic test to show how to use KMeans 
+// Basic test to show how to use KMeans 
+bool TestKMeans3D() 
 {
     using namespace AC;
 
@@ -34,8 +35,7 @@ bool TestKMeans3D() // Basic test to show how to use KMeans
     Vec3 observation;
     for (int k = 0; k < numCentroids; ++k) {
         for (int i = 0; i < numObservationsPerCentroid; ++i) {
-            observations[numObservationsPerCentroid*k + i] = Vec3(centroids[k][0] + float(noise()), centroids[k][1] + float(noise()), centroids[k][2] + float(noise()));
-            assignmentsGT[numObservationsPerCentroid*k + i] = k;
+            observations[numObservationsPerCentroid*k + i] = Vec3(centroids[k][0] + float(noise()), centroids[k][1] + float(noise()), centroids[k][2] + float(noise())); assignmentsGT[numObservationsPerCentroid*k + i] = k;
         }
     }
 
@@ -72,9 +72,7 @@ bool TestKMeans3D() // Basic test to show how to use KMeans
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/// <summary> Basic test for GMM. Create a noisy set of observations from a (known) multivariate gaussian distribution, 
-///           fit GMM to it, and compare the differences in labeling. </summary>
-/// <returns> true if the test passes, false if the test fails. </returns>
+// Basic test for GMM. Create a noisy set of observations from a (known) multivariate gaussian distribution, fit GMM to it, and compare the differences in labeling. 
 bool TestGMM3D()
 {
     using namespace AC;
@@ -91,11 +89,11 @@ bool TestGMM3D()
 
     // Create some covariance matrices, and rotate and scale them
     std::vector<Mat3> covariances(numModes);
-    covariances[0] = Vec3(1.0, 1.0, 1.0).asDiagonal() * Eigen::AngleAxisd(0.0, Vec3::UnitZ());
-    covariances[1] = Vec3(2.0, 1.0, 0.5).asDiagonal() * Eigen::AngleAxisd(0.2, Vec3::UnitZ());
+    covariances[0] = Vec3(1.0, 1.0, 1.0).asDiagonal() * Eigen::AngleAxisd(0.0, Vec3::UnitX());
+    covariances[1] = Vec3(2.0, 1.0, 0.5).asDiagonal() * Eigen::AngleAxisd(0.2, Vec3::UnitY()); 
     covariances[2] = Vec3(1.0, 2.0, 1.0).asDiagonal() * Eigen::AngleAxisd(0.4, Vec3::UnitZ());
-    covariances[3] = Vec3(1.0, 1.0, 2.0).asDiagonal() * Eigen::AngleAxisd(0.6, Vec3::UnitZ());
-    covariances[4] = Vec3(0.75, 1.0, 0.75).asDiagonal() * Eigen::AngleAxisd(0.8, Vec3::UnitZ());
+    covariances[3] = Vec3(1.0, 1.0, 2.0).asDiagonal() * Eigen::AngleAxisd(0.6, Vec3::UnitX());
+    covariances[4] = Vec3(0.75, 1.0, 0.75).asDiagonal() * Eigen::AngleAxisd(0.8, Vec3::UnitY());
 
     // Create some observations
     int numObservations = 100;

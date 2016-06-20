@@ -10,10 +10,10 @@ namespace AC
     namespace GMM {
 
         // Constants
-        const int c_MaxIterations = 10;
         const int c_KMeansRestarts = 10; // Default number of restarts for KMeans initialization
-        const double c_EMTolerance = 1e-4; // EM Tolerance before declaring success in optimization
-        const int INVALID_MODE = -1; // If you call closestMode and there are no modes, it returns INVALID_MODE
+        const int INVALID_MODE = -1; // If you call ClosestMode() and there are no modes, the mode returned is INVALID_MODE
+        const int c_EMDefaultMaxIterations = 10; // Max number of iterations of EM. If we do not get under the tolerance in MaxIterations, we give up.
+        const double c_EMDefaultTolerance = 1e-4; // Stopping condition in EM. If ratio of new vs old log likelihoods is lower than tolerance, finish process. 
 
         class GMM3D {
         public:
@@ -30,8 +30,14 @@ namespace AC
             /// <param name="observations"> The observations. </param>
             /// <param name="numKMeansRestarts"> [optional] Number of restarts in KMeans initialization. </param>
             /// <param name="scalingFactors"> [optional] Scaling factor for each observation. Useful if the observations have been whitened (so that the output GMM will still be unwhitened). </param>
+            /// <param name="EMTolerance"> [optional] Stopping condition in EM. If ratio of new vs old log likelihoods is lower than tolerance, finish process.  </param>
+            /// <param name="EMMaxIterations"> [optional] Max number of iterations of EM. If we do not get under the EM tolerance in MaxIterations, we give up. </param>
             /// <returns> true if it succeeds, false if it fails. </returns>
-            bool Process(const std::vector<Vec3>& observations, int numKMeansRestarts = c_KMeansRestarts, Vec3* scalingFactors = nullptr);
+            bool Process(const std::vector<Vec3>& observations, 
+                int numKMeansRestarts = c_KMeansRestarts, 
+                Vec3* scalingFactors = nullptr, 
+                double EMTolerance = c_EMDefaultTolerance, 
+                int EMMaxIterations = c_EMDefaultMaxIterations);
 
             /// <summary> Compute the log likelihood of the mixture model for an observation x_n, such that: log P(x_n) = log ( sum_k ( p(x_n|k)*p(k) )) </summary>
             /// <param name="observation"> The observation. </param>
