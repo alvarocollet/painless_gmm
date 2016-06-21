@@ -23,7 +23,7 @@ namespace
 }
 
 //----------------------------------------------------------------------------
-double AC::GMM::LogExpSum(const std::vector<double>& logValues1, const std::vector<double>& logValues2)
+double AC::GMM::LogSumExp(const std::vector<double>& logValues1, const std::vector<double>& logValues2)
 {
     _ASSERT(logValues1.size() == logValues2.size() && L"Vectors must have the same size");
 
@@ -80,7 +80,7 @@ double AC::GMM::GMM3D::LogLikelihood(const Vec3& observation)
     }
 
     // We have to use the LogExpSum trick to evaluate likelihoods to avoid underflows
-    return LogExpSum(m_tmpLogLikelihoods, m_tmpLogWeights);
+    return LogSumExp(m_tmpLogLikelihoods, m_tmpLogWeights);
 }
 
 //----------------------------------------------------------------------------

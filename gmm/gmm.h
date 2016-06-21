@@ -88,12 +88,12 @@ namespace AC
         };
 
         /// <summary> Compute log( sum_n( x1_n * x2_n )) from vectors of logValues1 and logValues2, where logValuesK[n] = log(xK_n).
-        ///           We use the log-exp-sum trick to avoid underflow: log( sum_n( x1_n * x2_n )) = log( sum_n( exp( log x1_n + log x2_n ))) = 
+        ///           We use the log-sum-exp trick to avoid underflow: log( sum_n( x1_n * x2_n )) = log( sum_n( exp( log x1_n + log x2_n ))) = 
         ///           = log(x1_MAX) + log(x2_MAX) + log( sum_n( exp( log(x1_n) - log(x1_MAX) + log(x2_n) - log(x2_MAX))) </summary>
         /// <param name="logValues1"> The first vector of log values. </param>
         /// <param name="logValues2"> The second vector of log values. </param>
         /// <returns> log( sum_n( x1_n * x2_n )) </returns>
-        double LogExpSum(const std::vector<double>& logValues1, const std::vector<double>& logValues2);
+        double LogSumExp(const std::vector<double>& logValues1, const std::vector<double>& logValues2);
 
         /// <summary> Compute the probability of 'observation' to be a sample of gmm1 or gmm2. </summary>
         /// <param name="gmm1">        [in] The first gmm. </param>
