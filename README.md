@@ -1,5 +1,5 @@
 # Tutorial on Painless Gaussian Mixture Models 
-A real-world implementation of a Gaussian Mixture Model, without the pain.
+A real-world implementation of a Gaussian Mixture Model in C++, without the pain.
 
 ## Introduction to Painless GMM
 
