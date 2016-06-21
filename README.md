@@ -1,8 +1,9 @@
 # Tutorial on Painless Gaussian Mixture Models 
+A real-world implementation of a Gaussian Mixture Model, without the pain.
 
 ## Introduction to Painless GMM
 
-A Gaussian Mixture Model (GMM) is a probability distribution defined as a linear combination of weighted Gaussian distributions. It is commonly used in computer vision and image processing tasks, such as estimating a color distribution for foreground/background segmentation. This project is intended as an *educational* tool on how to properly implement a Gaussian Mixture Model.
+A Gaussian Mixture Model (GMM) is a probability distribution defined as a linear combination of weighted Gaussian distributions. It is commonly used in computer vision and image processing tasks, such as estimating a color distribution for foreground/background segmentation, or in clustering problems. This project is intended as an **educational** tool on how to properly implement a Gaussian Mixture Model.
 
 GMMs are annoying to implement. The math behind GMMs is very easy to understand, but it is not possible to take the formulas and implement them directly. A straight implementation of the GMM formulas leads to underflow errors, singular matrices, divisions-by-zero, and NaNs. The likelihoods involved in GMM are very frequently too small to be directly represented as floating-point numbers (and, even more so, their multiplication). In the following paragraphs and code, I show the changes needed
 to take GMM from theory to a robust real-world implementation. Therefore, this is an implementation of GMM without the pain: a Painless GMM.
@@ -46,15 +47,15 @@ the linear likelihood, as
 
  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;![equation](https://latex.codecogs.com/gif.latex?%24%24%20l%28z_i%7Ck%29%20%3D%20%5Clog%20p%28z_i%7Ck%29%20%3D%20-%5Cfrac%7B1%7D%7B2%7D%20%5Clog%20%28%20%282%5Cpi%29%5Ed%20%5C%7C%5CSigma_k%5C%7C%29%20-%20%5Clog%20%5Cleft%28%20%5Cfrac%7B1%7D%7B2%7D%20%28z_i%20-%20%5Cmu_k%29%5ET%20%5CSigma_k%5E%7B-1%7D%20%28z_i%20-%20%5Cmu_k%29%20%5Cright%29.%20%24%24)
 
-We must also use the log likelihood of the whole GMM instead of the linear likelihood, but this calculation is slightly more convoluted. Given that the formula ![equation](https://latex.codecogs.com/gif.latex?%24p%28z_i%29%20%3D%20%5Csum_k%20p%28z_i%7Ck%29%20P%28k%29%24) performs likelihood additions, the use of ![equation](https://latex.codecogs.com/gif.latex?%24%5Clog%20p%28z_i%29%24) does not pose any immediate advantage (because we cannot directly add log likelihoods).  We use instead the `logexpsum` trick `LSE()`, which
+We must also use the log likelihood of the whole GMM instead of the linear likelihood, but this calculation is slightly more convoluted. Given that the formula ![equation](https://latex.codecogs.com/gif.latex?%24p%28z_i%29%20%3D%20%5Csum_k%20p%28z_i%7Ck%29%20P%28k%29%24) performs likelihood additions, the use of ![equation](https://latex.codecogs.com/gif.latex?%24%5Clog%20p%28z_i%29%24) does not pose any immediate advantage (because we cannot directly add log likelihoods).  We use instead the `logsumexp` trick `LSE()`, which
 states that
 
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;![equation](https://latex.codecogs.com/gif.latex?LSE%28z_i%29%20%5Ctriangleq%20%5Clog%20%5Cleft%28%20%5Csum_i%20z_i%20%5Cright%29%20%3D%20%5Clog%20z_%5Ctext%7Bmax%7D%20&plus;%20%5Clog%20%5Cleft%28%20%5Csum_i%20%5Cexp%20%5Cleft%28%20%5Clog%20z_i%20-%20%5Clog%20z_%5Ctext%7Bmax%7D%20%5Cright%29%20%5Cright%29.)
 
 In `LSE()`, we scale the ![equation](https://latex.codecogs.com/gif.latex?N) terms in the summation by the largest term ![equation](https://latex.codecogs.com/gif.latex?z_%5Ctext%7Bmax%7D) and convert the scaled terms to linear domain instead.
 
-Let us give an example of the `logexpsum` trick at work.  Let ![equation](https://latex.codecogs.com/gif.latex?%24p%28z_1%29%20%3D%20%5Cexp%28-1000%29%24) and ![equation](https://latex.codecogs.com/gif.latex?%24p%28z_2%29%20%3D%20%5Cexp%28-1001%29%24). We wish to compute ![equation](https://latex.codecogs.com/gif.latex?%24X%20%3D%20%5Clog%28p%28z_1%29&plus;p%28z_2%29%29%24).  The direct evaluation of ![equation](https://latex.codecogs.com/gif.latex?%24X%20%3D%20%5Clog%28p%28z_1%29&plus;p%28z_2%29%29%24)
-requires calculating ![equation](https://latex.codecogs.com/gif.latex?%24%5Cexp%28-1000%29%24) and ![equation](https://latex.codecogs.com/gif.latex?%24%5Cexp%28-1001%29%24), which causes underflow (regardless of the representation, `float` or `double`), and therefore ![equation](https://latex.codecogs.com/gif.latex?%24X%20%3D%20%5Clog%20%280%20-%200%29%20%3D%20%5Clog%200%20%3D%20-%5Cinf%24). Using `logexpsum`, this is ![equation](https://latex.codecogs.com/gif.latex?%24X%20%3D%20-1000%20&plus;%20log%20%5Cleft%28%5Cexp%280%29%20&plus;%20%5Cexp%28-1%29%5Cright%29%20%5Capprox%20-999.7%24).
+Let us give an example of the `logsumexp` trick at work.  Let ![equation](https://latex.codecogs.com/gif.latex?%24p%28z_1%29%20%3D%20%5Cexp%28-1000%29%24) and ![equation](https://latex.codecogs.com/gif.latex?%24p%28z_2%29%20%3D%20%5Cexp%28-1001%29%24). We wish to compute ![equation](https://latex.codecogs.com/gif.latex?%24X%20%3D%20%5Clog%28p%28z_1%29&plus;p%28z_2%29%29%24).  The direct evaluation of ![equation](https://latex.codecogs.com/gif.latex?%24X%20%3D%20%5Clog%28p%28z_1%29&plus;p%28z_2%29%29%24)
+requires calculating ![equation](https://latex.codecogs.com/gif.latex?%24%5Cexp%28-1000%29%24) and ![equation](https://latex.codecogs.com/gif.latex?%24%5Cexp%28-1001%29%24), which causes underflow (regardless of the representation, `float` or `double`), and therefore ![equation](https://latex.codecogs.com/gif.latex?%24X%20%3D%20%5Clog%20%280%20-%200%29%20%3D%20%5Clog%200%20%3D%20-%5Cinf%24). Using `logsumexp`, this is ![equation](https://latex.codecogs.com/gif.latex?%24X%20%3D%20-1000%20&plus;%20log%20%5Cleft%28%5Cexp%280%29%20&plus;%20%5Cexp%28-1%29%5Cright%29%20%5Capprox%20-999.7%24).
 
 The GMM log likelihood can be expressed as ![equation](https://latex.codecogs.com/gif.latex?%24l%28z_i%29%20%3D%20%5Clog%20p%28z_i%29%20%3D%20LSE%28p%28z_i%7Ck%29%20P%28k%29%29%24). Given that we already calculate ![equation](https://latex.codecogs.com/gif.latex?%24l%28z_i%7Ck%29%24) instead of ![equation](https://latex.codecogs.com/gif.latex?%24p%28z_i%7Ck%29%24), the GMM log likelihood becomes
 
@@ -75,5 +76,30 @@ the global GMM log likelihood becomes
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;![equation](https://latex.codecogs.com/gif.latex?l%28%5Cvi%7Bz%7D%29%20%3D%20%5Clog%20p%28%5Cvi%7Bz%7D%29%20%3D%20%5Csum_i%20l%28z_i%29)
 
 
+## Avoiding singular matrix inversions
 
+The second main problem in a robust GMM implementation is the appearance of singular matrix inversions.  This issue commonly arises with low-variance patches. For example, an image with a section of saturated pixels (e.g., camera is pointing to a light) contains an area with constant color and zero variance. If we attempt to train a GMM in such an image, all pixels in the zero-variance patch will be clustered together, but the evaluation of the Gaussian log likelihood ![equation](https://latex.codecogs.com/gif.latex?%24l%28z_i%7Ck%29%24) will fail because it requires an inverse covariance matrix. A patch with constant color has a singular covariance matrix (all zeros), which is not invertible.
 
+The simplest solution to this problem is to add bounds to the computation of the estimated covariance matrices. In particular, after
+evaluating each covariance matrix, we evaluate its reciprocal condition number
+
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;![equation](https://latex.codecogs.com/gif.latex?%5Ctext%7BRCOND%7D%28%5CSigma%29%20%3D%20%5Cfrac%7B1%7D%7B%5C%7C%5CSigma%5C%7C_1%20%5C%7C%5CSigma%5E%7B-1%7D%5C%7C_1%7D.)
+
+In well-conditioned matrix inversions, `RCOND` is close to 1, whereas it approaches zero for ill-conditioned (close to singular) matrix inversions. In our implementation, we monitor each matrix so that ![equation](https://latex.codecogs.com/gif.latex?%24%5Ctext%7BRCOND%7D%28%5CSigma%29%20%3E%20%5Cepsilon%24), with ![equation](https://latex.codecogs.com/gif.latex?%5Cepsilon%20%3D%2010%5E%7B-10%7D). If this condition is not met,
+we force ![equation](https://latex.codecogs.com/gif.latex?%24%5CSigma%24) to be a diagonal matrix with small (but well-conditioned) variance.
+
+## Initialization
+The training of a GMM requires some initialization for the means and covariances.  A common approach is to use K-Means as a starting point. In our case, we implemented a basic K-Means algorithm with Forgy initialization. We use the output cluster centroids and cluster variances to initialize our GMM distribution, with the cluster centroid becoming the GMM means ![equation](https://latex.codecogs.com/gif.latex?%24%5Cmu_k%24) and the cluster variances becoming diagonal covariance matrices ![equation](https://latex.codecogs.com/gif.latex?%24%5CSigma_k%24).
+
+## Data whitening
+Clustering algorithms like K-Means and GMM show slower convergence properties when the data is badly scaled, or if there is a great disparity in the variance of different features. A common solution to this problem is to perform a *data whitening* step prior to clustering. To *whiten* a data set, we rescale each feature (e.g., the R, G, and B channels in an RGB pixel) in the 
+feature vector ![equation](https://latex.codecogs.com/gif.latex?%24z_i%24) so that it has unit variance. Consider the scaling matrix 
+
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;![equation](https://latex.codecogs.com/gif.latex?T%20%3D%20%5Cbegin%7Bpmatrix%7D%20%5Csigma_R%20%26%200%20%26%200%5C%5C%200%20%26%20%5Csigma_G%20%26%200%5C%5C%200%20%26%200%20%26%5Csigma_B%20%5Cend%7Bpmatrix%7D.)
+
+The data whitening of the feature vector ![equation](https://latex.codecogs.com/gif.latex?%24z_i%24) is then
+
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;![equation](https://latex.codecogs.com/gif.latex?%5Cbar%7Bz%7D_i%20%3D%20T%5E%7B-1%7Dz_i%20%3D%20%5Cleft%5B%5Cfrac%7BR_i%7D%7B%5Csigma_%7BR%7D%7D%2C%5C%20%5Cfrac%7BG_i%7D%7B%5Csigma_%7BG%7D%7D%2C%5C%20%5Cfrac%7BB_i%7D%7B%5Csigma_%7BB%7D%7D%5Cright%5D.)
+
+We use the whitened data set ![equation](https://latex.codecogs.com/gif.latex?%5Cvi%7B%5Cbar%7Bz%7D%7D%20%3D%20%5B%5Cbar%7Bz_0%7D%2C%20%5Cldots%2C%20%5Cbar%7Bz%7D_i%2C%20%5Cldots%2C%20%5Cbar%7Bz_N%7D%5D) as an input to K-Means and then to GMM. After the GMM has converged on the whitened data, we rescale the whitened means ![equation](https://latex.codecogs.com/gif.latex?%5Cbar%7B%5Cmu%7D_k) and covariances ![equation](https://latex.codecogs.com/gif.latex?%5Cbar%7B%5CSigma%7D_k) to their original values. In particular, 
+![equation](https://latex.codecogs.com/gif.latex?%5Cmu_k%20%26%3D%26%20T%5Cbar%7B%5Cmu%7D_k) and ![equation](https://latex.codecogs.com/gif.latex?%5CSigma_k%20%26%3D%26%20T%20%5Cbar%7B%5CSigma%7D_k%20T).
